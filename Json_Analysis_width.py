@@ -3,7 +3,7 @@ import json
 import requests
 
 def width(jsn, var=""):
-    queue = deque([(jsn, "")])
+    queue = deque([(jsn, var)])
     while queue:
         node, var = queue.popleft()
         if isinstance(node, dict):

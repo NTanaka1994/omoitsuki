@@ -13,7 +13,7 @@ def depth(jsn, var=""):
         pass
 
 
-url = "https://raw.githubusercontent.com/NTanaka1994/DataAnalysis/main/JSON%E3%81%AE%E8%A7%A3%E6%9E%90/json_sample.json" #ここにJSONのあるURLを入れる
+url = "https://www.jma.go.jp/bosai/forecast/data/forecast/130000.json" #ここにJSONのあるURLを入れる
 
 res = requests.get(url)
 

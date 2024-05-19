@@ -91,7 +91,6 @@ def effecttest2(df, columns, y_name, auto=False):
         plt.show()
     return ave, dtr, pos , lab
 
-
 def corr_sort(df):
     corr = df.corr().values
     dst = []
@@ -102,7 +101,6 @@ def corr_sort(df):
     df_corr = pd.DataFrame(dst)
     df_corr.columns = ["因子1", "因子2", "相関係数"]
     return df_corr.sort_values("相関係数", ascending=False)
-
 
 def pcorr(df):
     pcor = []
@@ -150,7 +148,6 @@ def regression_report(y_test, y_pred, x):
         _ = 0
     print("MAE     : %f"%(mean_absolute_error(y_test, y_pred)))
     pass
-
 
 def factor_exp(pca, x):
     col = []
@@ -236,16 +233,19 @@ def marcov(arr):
             dic[arr[i-1]] = {}
             dic[arr[i-1]][arr[i]] = 1
     col = []
-    sumval = 0
+    sumval = {}
     for val in dic:
         col.append(val)
         for val2 in dic[val]:
             col.append(val2)
-            sumval = sumval + dic[val][val2]
+            try:
+                sumval[val] = sumval[val] + dic[val][val2]
+            except:
+                sumval[val] = dic[val][val2]
     col = list(set(col))
     for val in dic:
         for val2 in dic[val]:
-            dic[val][val2] = dic[val][val2] / sumval
+            dic[val][val2] = dic[val][val2] / sumval[val]
     table = []
     for val in col:
         tmp = []
@@ -259,6 +259,7 @@ def marcov(arr):
     df.columns = col
     df.index = col
     return df, dic
+
 
 def cart_analysis_GBDT(x, y, model, filename="CART"):
     y_data = list(set(y.values))

@@ -3,6 +3,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_squared_log_error
+from sklearn.metrics import classification_report
 from pydotplus import graph_from_dot_data as GFDD
 import pandas as pd
 import numpy as np
@@ -44,8 +45,6 @@ def effecttest(df, columns, y_name):
         pos.append(tmp_pos)
         lab.append(tmp_lab)
     return ave, dtr, pos, lab
-
-
 
 def effecttest2(df, columns, y_name, auto=False):
     ave = []
@@ -224,3 +223,110 @@ def boxplot(df):
         x = x + 1
     plt.xticks(rotation=90)
     plt.show()
+
+def marcov(arr):
+    dic = {}
+    for i in range(1, len(arr)):
+        if arr[i-1] in dic:
+            if arr[i] in dic[arr[i-1]]:
+                dic[arr[i-1]][arr[i]] = dic[arr[i-1]][arr[i]] + 1
+            else:
+                dic[arr[i-1]][arr[i]] = 1
+        else:
+            dic[arr[i-1]] = {}
+            dic[arr[i-1]][arr[i]] = 1
+    col = []
+    sumval = 0
+    for val in dic:
+        col.append(val)
+        for val2 in dic[val]:
+            col.append(val2)
+            sumval = sumval + dic[val][val2]
+    col = list(set(col))
+    for val in dic:
+        for val2 in dic[val]:
+            dic[val][val2] = dic[val][val2] / sumval
+    table = []
+    for val in col:
+        tmp = []
+        for val2 in col:
+            try:
+                tmp.append(dic[val][val2])
+            except:
+                tmp.append(0)
+        table.append(tmp)
+    df = pd.DataFrame(table)
+    df.columns = col
+    df.index = col
+    return df, dic
+
+def cart_analysis_GBDT(x, y, model, filename="CART"):
+    y_data = list(set(y.values))
+    for i in range(len(y_data)):
+        y_data[i] = str(y_data[i])
+    for i in range(len(model.estimators_[len(model.estimators_)-1])):
+        dotdata = EG(model.estimators_[len(model.estimators_)-1, i], filled=True, rounded=True, class_names=y_data, feature_names=x.columns, out_file=None)
+        graph = GFDD(dotdata)
+        graph.write_png(filename+str(i)+".png")
+
+def cart_analysis_RF(x, y, model, filename="CART"):
+    y_data = list(set(y.values))
+    for i in range(len(y_data)):
+        y_data[i] = str(y_data[i])
+    for i in range(len(model.estimators_)):
+        dotdata = EG(model.estimators_[i], filled=True, rounded=True, class_names=y_data, feature_names=x.columns, out_file=None)
+        graph = GFDD(dotdata)
+        graph.write_png(filename+str(i)+".png")
+
+def cart_analysis_DT(x, y, model, filename="CART"):
+    y_data = list(set(y.values))
+    for i in range(len(y_data)):
+        y_data[i] = str(y_data[i])
+    dotdata = EG(model, filled=True, rounded=True, class_names=y_data, feature_names=x.columns, out_file=None)
+    graph = GFDD(dotdata)
+    graph.write_png(filename+".png")
+
+def classification_report_dataframe(y, y_pred):
+    rep = classification_report(y, y_pred, output_dict=True)
+    dst = []
+    index = []
+    for col in rep:
+        index.append(col)
+        if col != "accuracy":
+            dst.append([rep[col]["precision"], rep[col]["recall"], rep[col]["f1-score"],rep[col]["support"]])
+        else:
+            dst.append(["", "", rep["accuracy"], rep["weighted avg"]["support"]])
+    df_rep = pd.DataFrame(dst)
+    df_rep.index = index
+    df_rep.columns = ["precision", "recall", "f1-score", "support"]
+    return df_rep
+
+def optimal_threshold(y, pred, n="0.0", p="1.0"):
+    tsd = np.linspace(0.1, 0.9, 100)
+    accs = []
+    rec0 = []
+    rec1 = []
+    pcs0 = []
+    pcs1 = []
+    f1_0 = []
+    f1_1 = []
+    for i in range(len(tsd)):
+        y_pred = np.where(pred >= tsd[i], 1, 0)
+        rep = classification_report(y, y_pred, output_dict=True)
+        accs.append(rep["accuracy"])
+        rec0.append(rep[n]["recall"])
+        rec1.append(rep[p]["recall"])
+        pcs0.append(rep[n]["precision"])
+        pcs1.append(rep[p]["precision"])
+        f1_0.append(rep[n]["f1-score"])
+        f1_1.append(rep[p]["f1-score"])
+    plt.plot(tsd, accs, label="accuracy")
+    plt.plot(tsd, rec0, label="recall 0")
+    plt.plot(tsd, rec1, label="recall 1")
+    plt.plot(tsd, pcs0, label="precision 0")
+    plt.plot(tsd, pcs1, label="precision 1")
+    plt.plot(tsd, f1_0, label="f1-score 0")
+    plt.plot(tsd, f1_1, label="f1-score 1")
+    plt.legend()
+    plt.show()
+    return tsd[np.argmax(accs)], tsd[np.argmax(rec0)], tsd[np.argmax(rec1)], tsd[np.argmax(pcs0)], tsd[np.argmax(pcs1)], tsd[np.argmax(f1_0)], tsd[np.argmax(f1_1)]

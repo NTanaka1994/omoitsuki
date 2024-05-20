@@ -260,6 +260,18 @@ def marcov(arr):
     df.index = col
     return df, dic
 
+def marcov_pred(dic, start, length):
+    state = start
+    flow = [state]
+    for i in range(length):
+        if state in dic:
+            next_state = list(dic[state].keys())
+            proba = list(dic[state].values())
+            state = np.random.choice(next_state, p=proba)
+        else:
+            break
+        flow.append(state)
+    return flow
 
 def cart_analysis_GBDT(x, y, model, filename="CART"):
     y_data = list(set(y.values))

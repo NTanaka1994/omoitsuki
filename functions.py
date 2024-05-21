@@ -5,6 +5,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_squared_log_error
 from sklearn.metrics import classification_report
 from pydotplus import graph_from_dot_data as GFDD
+from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -343,3 +344,15 @@ def optimal_threshold(y, pred, n="0.0", p="1.0"):
     plt.legend()
     plt.show()
     return tsd[np.argmax(accs)], tsd[np.argmax(rec0)], tsd[np.argmax(rec1)], tsd[np.argmax(pcs0)], tsd[np.argmax(pcs1)], tsd[np.argmax(f1_0)], tsd[np.argmax(f1_1)]
+
+def factor_plot3D(x, y, z, c=None, cmap=None):
+    fig = plt.figure(figsize=(16,10))
+    ax1 = fig.add_subplot(2, 2, 1)
+    ax1.scatter(x, y, cmap=cmap, c=c)
+    ax2 = fig.add_subplot(2, 2, 2, projection='3d')
+    ax2.scatter(x, y, z, cmap=cmap, c=c)
+    ax3 = fig.add_subplot(2, 2, 3)
+    ax3.scatter(z, y, cmap=cmap, c=c)
+    ax4 = fig.add_subplot(2, 2, 4)
+    ax4.scatter(x, z, cmap=cmap, c=c)
+    plt.show()

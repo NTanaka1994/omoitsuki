@@ -356,3 +356,52 @@ def factor_plot3D(x, y, z, c=None, cmap=None):
     ax4 = fig.add_subplot(2, 2, 4)
     ax4.scatter(x, z, cmap=cmap, c=c)
     plt.show()
+
+def closs_val_model(model, x, y, cv=50, cla=True):
+    ylist = list(set(y.values.astype("str")))
+    models = []
+    acc = []
+    for i in range(cv):
+        x_test = x.loc[int(i*len(x)/cv):int((i+1)*len(x)/cv)]
+        y_test = y.loc[int(i*len(x)/cv):int((i+1)*len(x)/cv)]
+        x_train = pd.concat([x.loc[0:int((i)*len(x)/cv)], x.loc[int((i+2)*len(x)/cv):]])
+        y_train = pd.concat([y.loc[0:int((i)*len(x)/cv)], y.loc[int((i+2)*len(x)/cv):]])
+        model = model
+        model.fit(x_train, y_train)
+        y_pred = model.predict(x_test)
+        if cla:
+            rep = classification_report(y_test, y_pred, output_dict=True)
+            tmp = []
+            for i in range(len(ylist)):
+                try:
+                    tmp.append(rep[str(ylist[i])]["precision"])
+                    tmp.append(rep[str(ylist[i])]["recall"])
+                    tmp.append(rep[str(ylist[i])]["f1-score"])
+                    tmp.append(rep[str(ylist[i])]["support"])
+                except:
+                    tmp.append(None)
+                    tmp.append(None)
+                    tmp.append(None)
+                    tmp.append(None)
+                    print(rep)
+            tmp.append(rep["accuracy"])
+            acc.append(tmp)
+            models.append([model, rep["accuracy"]])
+            columns = []
+            for i in range(len(ylist)):
+                for col in ["precision", "recall", "f1-score", "support"]:
+                    columns.append(ylist[i]+"_"+col)
+            columns.append("accuracy")
+            df_acc = pd.DataFrame(acc)
+            df_acc.columns = columns
+        else:
+            tmp = []
+            tmp.append(r2_score(y_test, y_pred))
+            tmp.append(mean_absolute_error(y_test, y_pred))
+            tmp.append(mean_squared_error(y_test, y_pred))
+            tmp.append(mean_squared_error(y_test, y_pred)**0.5)
+            acc.append(tmp)
+            df_acc = pd.DataFrame(acc)
+            df_acc.columns = ["R2", "MAE", "MSE", "RMSE"]
+            models.append([model, r2_score(y_test, y_pred)])
+    return df_acc, models, df_acc.describe()

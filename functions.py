@@ -405,3 +405,51 @@ def closs_val_model(model, x, y, cv=50, cla=True):
             df_acc.columns = ["R2", "MAE", "MSE", "RMSE"]
             models.append([model, r2_score(y_test, y_pred)])
     return df_acc, models, df_acc.describe()
+
+def biplot_spv(df, y):
+    for col in df.columns:
+        df[col] = (df[col] - df[col].mean()) / df[col].std()
+    model = PCA()
+    model.fit(df)
+    df_pc = model.transform(df)
+    com = model.components_
+    evr = model.explained_variance_ratio_
+    fac = []
+    for i in range(len(evr)):
+        fac.append(np.sqrt(model.explained_variance_ratio_)[i] * model.components_[i])
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+    ax2.scatter(df_pc[:, 0], df_pc[:, 1], cmap="brg", c=y)
+    ax3 = ax1.twiny()
+    ylim = [abs(max(fac[1])), abs(min(fac[1]))]
+    xlim = [abs(max(fac[0])), abs(min(fac[0]))]
+    for i in range(len(df.columns)):
+        ax3.plot([0, fac[0][i]], [0, fac[1][i]], color="#FF0000")
+        ax3.text(fac[0][i], fac[1][i], df.columns[i])
+    ax3.set_xlim(-max(xlim), max(xlim))
+    ax3.set_ylim(-max(ylim), max(ylim))
+    plt.show()
+
+def biplot_nonspv(df):
+    for col in df.columns:
+        df[col] = (df[col] - df[col].mean()) / df[col].std()
+    model = PCA()
+    model.fit(df)
+    df_pc = model.transform(df)
+    com = model.components_
+    evr = model.explained_variance_ratio_
+    fac = []
+    for i in range(len(evr)):
+        fac.append(np.sqrt(model.explained_variance_ratio_)[i] * model.components_[i])
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+    ax2.scatter(df_pc[:, 0], df_pc[:, 1], color="#000000")
+    ax3 = ax1.twiny()
+    ylim = [abs(max(fac[1])), abs(min(fac[1]))]
+    xlim = [abs(max(fac[0])), abs(min(fac[0]))]
+    for i in range(len(df.columns)):
+        ax3.plot([0, fac[0][i]], [0, fac[1][i]], color="#FF0000")
+        ax3.text(fac[0][i], fac[1][i], df.columns[i])
+    ax3.set_xlim(-max(xlim), max(xlim))
+    ax3.set_ylim(-max(ylim), max(ylim))
+    plt.show()

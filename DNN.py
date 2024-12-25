@@ -29,7 +29,7 @@ class DNNClassifier():
         self.model.add(Dense(len(list(set(y_train))), activation="softmax"))
         self.model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
         x_train, x_val, y_train, y_val = train_test_split(self.x_train, self.y_train, test_size=0.3)
-        history = self.model.fit(x_train, y_train, epochs=200, batch_size=32, validation_data=(x_val, y_val))
+        self.history = self.model.fit(x_train, y_train, epochs=200, batch_size=32, validation_data=(x_val, y_val))
     
     def predict(self, x_test):
         if isinstance(x_test, pd.DataFrame):
@@ -42,6 +42,16 @@ class DNNClassifier():
         if isinstance(x_test, pd.DataFrame):
             x_test = x_test.values
         return self.model.predict(x_test)
+    
+    def epoch(self, val="loss"):
+        plt.plot(self.history.history[val])
+        plt.plot(self.history.history["val_"+val])
+        plt.title("model "+val)
+        plt.ylabel(val)
+        plt.xlabel("Epoch")
+        plt.legend(["Train", "Validation"])
+        plt.show()
+        
 
 class DNNRegressor():
     def __init__(self, hidden_layer_sizes=(100,)):
@@ -75,3 +85,12 @@ class DNNRegressor():
             x_test = x_test.values
         self.pred = self.model.predict(x_test)
         return self.pred
+
+    def epoch(self, val="loss"):
+        plt.plot(self.history.history[val])
+        plt.plot(self.history.history["val_"+val])
+        plt.title("model loss")
+        plt.ylabel("loss")
+        plt.xlabel("Epoch")
+        plt.legend(["Train", "Validation"])
+        plt.show()

@@ -1,6 +1,8 @@
 from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import r2_score
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -42,6 +44,14 @@ class DNNClassifier():
         if isinstance(x_test, pd.DataFrame):
             x_test = x_test.values
         return self.model.predict(x_test)
+    
+    def score(self, x_val, y_val):
+        if isinstance(x_val, pd.DataFrame):
+            x_val = x_val.values
+        if isinstance(y_val, pd.Series):
+            y_val = y_val.values
+        y_pred = self.predict(x_val)
+        return accuracy_score(y_val, y_pred)
     
     def epoch(self, val="loss"):
         plt.plot(self.history.history[val])
@@ -85,6 +95,14 @@ class DNNRegressor():
             x_test = x_test.values
         self.pred = self.model.predict(x_test)
         return self.pred
+    
+    def score(self, x_val, y_val):
+        if isinstance(x_val, pd.DataFrame):
+            x_val = x_val.values
+        if isinstance(y_val, pd.Series):
+            y_val = y_val.values
+        y_pred = self.predict(x_val)
+        return r2_score(y_val, y_pred)
 
     def epoch(self, val="loss"):
         plt.plot(self.history.history[val])
